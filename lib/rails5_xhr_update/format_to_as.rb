@@ -6,17 +6,16 @@ require "pry"
 
 # Provide the XHRToRails5 class.
 module Rails5XHRUpdate
-  AST_TRUE = Parser::AST::Node.new(:true) # rubocop:disable Lint/BooleanSymbol)
-
-  # Convert uses of the xhr method to use the rails 5 syntax.
+  # Convert uses of the format param method to use the rails 5 syntax.
   #
   # For example prior to rails 5 one might write:
   #
-  #     xhr :get, images_path, limit: 10, sort: 'new'
+  #     get :images_path, format: :json, params: {limit: 10, sort: 'new'}
+  #     get :images_path, params: {limit: 10, sort: 'new', format: :json}
   #
   # This class will convert that into:
   #
-  #     get images_path, params: { limit: 10, sort: 'new' }, xhr: true
+  #     get :images_path, params: { limit: 10, sort: 'new' }, as: :json
   class FormatToAs < Parser::TreeRewriter
     def on_send(node)
       return unless [:get, :post, :put, :update, :delete].include?(node.children[1])
@@ -66,18 +65,18 @@ module Rails5XHRUpdate
         # dont process if we have an as
         return nil if arguments[0].children[0].to_a.select{|c| c.children[0] == :as}.first
         result = {}
-        arguments[0].children.each do |node|
-          raise Exception, "unexpected #{node}" if node.children.size != 2
-          result[node.children[0].children[0]] = node.children[1]
+        arguments[0].children.each do |arg_node|
+          raise Exception, "unexpected #{arg_node}" if arg_node.children.size != 2
+          result[arg_node.children[0].children[0]] = arg_node.children[1]
         end
         if format = result.delete(:format)
           result[:as] = format
         end
         if params = result[:params]
           result_params = {}
-          params.children.each do |node|
-            raise Exception, "unexpected #{node}" if node.children.size != 2
-            result_params[node.children[0].children[0]] = node.children[1]
+          params.children.each do |param_node|
+            raise Exception, "unexpected #{param_node}" if param_node.children.size != 2
+            result_params[param_node.children[0].children[0]] = param_node.children[1]
           end
           if  format = result_params.delete(:format)
             result[:as] = format
