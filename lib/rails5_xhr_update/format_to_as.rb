@@ -16,6 +16,8 @@ module Rails5XHRUpdate
   # This class will convert that into:
   #
   #     get :images_path, params: { limit: 10, sort: 'new' }, as: :json
+  #
+  # Note: cant handle **params conversions
   class FormatToAs < Parser::TreeRewriter
     def on_send(node)
       return unless [:get, :post, :put, :update, :delete].include?(node.children[1])
@@ -26,6 +28,8 @@ module Rails5XHRUpdate
           node.updated(nil,[nil,node.children[1], node.children[2]]+ children)
         ))
       end
+    rescue Exception
+      puts "#{node.loc.expression} #{$!}"
     end
 
     private
@@ -61,6 +65,7 @@ module Rails5XHRUpdate
 
     def extract_and_validate_arguments(node)
       arguments = node.children[3..-1]
+      return nil unless arguments[0]
       if arguments[0].type == :hash
         # dont process if we have an as
         return nil if arguments[0].children[0].to_a.select{|c| c.children[0] == :as}.first
@@ -74,7 +79,10 @@ module Rails5XHRUpdate
         end
         if params = result[:params]
           result_params = {}
+          # if params is an ivar
+          return nil unless params.respond_to?(:children)
           params.children.each do |param_node|
+          return nil unless param_node.respond_to?(:children)
             raise Exception, "unexpected #{param_node}" if param_node.children.size != 2
             result_params[param_node.children[0].children[0]] = param_node.children[1]
           end
