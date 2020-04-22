@@ -10,7 +10,7 @@ module Rails5XHRUpdate
       paths.each do |path|
         buffer = Parser::Source::Buffer.new(path)
         buffer.read
-        new_source = XHRToRails5.new.rewrite(
+        new_source = FormatToAs.new.rewrite(
           buffer, Parser::CurrentRuby.new.parse(buffer)
         )
         output(new_source, path)
