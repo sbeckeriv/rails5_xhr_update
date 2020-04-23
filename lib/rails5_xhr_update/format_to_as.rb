@@ -20,7 +20,7 @@ module Rails5XHRUpdate
   # Note: cant handle **params conversions
   class FormatToAs < Parser::TreeRewriter
     def on_send(node)
-      return unless [:get, :post, :put, :update, :delete].include?(node.children[1])
+      return unless [:get, :post, :put, :patch, :delete, :head].include?(node.children[1])
       arguments = extract_and_validate_arguments(node)
       if arguments
         children  = add_xhr_node(arguments)
