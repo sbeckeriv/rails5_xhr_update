@@ -1,5 +1,12 @@
-[![Gem](https://img.shields.io/gem/v/rails5_xhr_update.svg)](https://rubygems.org/gems/rails5_xhr_update)
-[![Build Status](https://travis-ci.org/appfolio/rails5_xhr_update.svg?branch=master)](https://travis-ci.org/appfolio/rails5_xhr_update)
+FORKED it rewrites format outside of params as .. as. i cant find documents on this. I locally changed it to just keep it as format but remove it from the params hash still
+
+issues:
+it reorders the hash keys
+
+
+array[0].id => array[](0).id  which i mean is correct...
+
+
 
 # rails5_xhr_update
 
